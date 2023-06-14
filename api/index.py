@@ -32,6 +32,7 @@ def send_email():
     body = request.form.get('body')
     cc = request.form.get('cc', '')
     bcc = request.form.get('bcc', '')
+    is_html = bool(request.form.get('is_html', False))  # Retrieve the 'is_html' parameter from the request
 
     try:
         # Create a secure connection to the mail server
