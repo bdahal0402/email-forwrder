@@ -32,37 +32,27 @@ def send_email():
     body = request.form.get('body')
     cc = request.form.get('cc', '')
     bcc = request.form.get('bcc', '')
-    is_html = bool(request.form.get('is_html', False))  # Retrieve the 'is_html' parameter from the request
 
     try:
+        email_message = MIMEText(body, 'html')
+        email_message['Subject'] = subject
+        email_message['From'] = sender_email
+        email_message['To'] = to
+        email_message['Cc'] = cc
+        email_message['Bcc'] = bcc
+
         # Create a secure connection to the mail server
         smtp = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-    
+
         # Start TLS encryption
         smtp.starttls()
-    
+
         # Login to the sender's email account
         smtp.login(SMTP_USERNAME, SMTP_PASSWORD)
-    
-        # Create the email message
-        msg = MIMEMultipart()
-        msg['From'] = sender_email
-        msg['To'] = to
-        msg['Subject'] = subject
-    
-        # Check if the email content is HTML or plain text
-        if is_html:
-            # Create an HTML message
-            body_part = MIMEText(body, 'html')
-        else:
-            # Create a plain text message
-            body_part = MIMEText(body, 'plain')
-    
-        msg.attach(body_part)
-    
+
         # Send the email
-        smtp.sendmail(sender_email, to, msg.as_string())
-    
+        smtp.send_message(email_message)
+
         # Close the SMTP connection
         smtp.quit()
 
@@ -71,4 +61,3 @@ def send_email():
     except Exception as e:
         # Something went wrong, return 400 status code
         return jsonify({'message': str(e)}), 400
-
