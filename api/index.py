@@ -1,6 +1,7 @@
 import os
 from flask import Flask, request, abort, jsonify
 import smtplib
+from email.mime.text import MIMEText
 
 app = Flask(__name__)
 
@@ -35,25 +36,32 @@ def send_email():
     try:
         # Create a secure connection to the mail server
         smtp = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-
+    
         # Start TLS encryption
         smtp.starttls()
-
+    
         # Login to the sender's email account
         smtp.login(SMTP_USERNAME, SMTP_PASSWORD)
-
+    
         # Create the email message
-        email_message = 'Subject: {}\n'.format(subject)
-        email_message += 'To: {}\n'.format(to)
-        if cc:
-            email_message += 'Cc: {}\n'.format(cc)
-        if bcc:
-            email_message += 'Bcc: {}\n'.format(bcc)
-        email_message += '\n{}'.format(body)
-
+        msg = MIMEMultipart()
+        msg['From'] = sender_email
+        msg['To'] = to
+        msg['Subject'] = subject
+    
+        # Check if the email content is HTML or plain text
+        if is_html:
+            # Create an HTML message
+            body_part = MIMEText(body, 'html')
+        else:
+            # Create a plain text message
+            body_part = MIMEText(body, 'plain')
+    
+        msg.attach(body_part)
+    
         # Send the email
-        smtp.sendmail(sender_email, to, email_message)
-
+        smtp.sendmail(sender_email, to, msg.as_string())
+    
         # Close the SMTP connection
         smtp.quit()
 
