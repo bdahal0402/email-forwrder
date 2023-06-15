@@ -36,7 +36,7 @@ def send_email():
     try:
         email_message = MIMEText(body, 'html')
         email_message['Subject'] = subject
-        email_message['From'] = sender_email
+        email_message['From'] = 'info@kcnepali.org'
         email_message['To'] = to
         email_message['Cc'] = cc
         email_message['Bcc'] = bcc
