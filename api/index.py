@@ -2,6 +2,8 @@ import os
 from flask import Flask, request, abort, jsonify
 import smtplib
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
 
 app = Flask(__name__)
 
@@ -34,12 +36,22 @@ def send_email():
     bcc = request.form.get('bcc', '')
 
     try:
-        email_message = MIMEText(body, 'html')
+        # Create a MIMEMultipart message to hold the email content and attachments
+        email_message = MIMEMultipart()
+        email_message.attach(MIMEText(body, 'html'))
         email_message['Subject'] = subject
         email_message['From'] = sender_email
         email_message['To'] = to
         email_message['Cc'] = cc
         email_message['Bcc'] = bcc
+
+        # Retrieve the uploaded file (assuming it is in 'attachment' form field)
+        attachment_file = request.files.get('attachment')
+        if attachment_file:
+            # Add the attachment to the email message
+            attachment = MIMEApplication(attachment_file.read(), _subtype='octet-stream')
+            attachment.add_header('Content-Disposition', 'attachment', filename=attachment_file.filename)
+            email_message.attach(attachment)
 
         # Create a secure connection to the mail server
         smtp = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
